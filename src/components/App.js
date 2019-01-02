@@ -1,7 +1,7 @@
 import React from 'react'
-
 import Filters from './Filters'
 import PetBrowser from './PetBrowser'
+import { getAll, getByType } from '../data/pets';
 
 class App extends React.Component {
   constructor() {
@@ -15,6 +15,42 @@ class App extends React.Component {
     }
   }
 
+  onChangeType = (type) => {
+    this.setState({
+      ...this.state,
+      filters: {
+        type: type
+      }
+    });
+  }
+
+  onFindPetsClick = () => {
+    if(this.state.filters.type === "all"){
+      this.setState({
+        ...this.state,
+        pets: getAll()
+      });
+    } else {
+      this.setState({
+        ...this.state,
+        pets: getByType(this.state.filters.type)
+      });
+    }
+  }
+
+  onAdoptPet = (id) => {
+    const newPets = [...this.state.pets];
+    const indexOfPetToAdopt = newPets.findIndex(pet => pet.id === id);
+    const petToAdopt = newPets.find(pet => pet.id === id);
+
+    petToAdopt.isAdopted = true;
+    newPets.splice(indexOfPetToAdopt, 1, petToAdopt);
+    this.setState({
+      ...this.state,
+      pets: newPets
+    });
+  }
+
   render() {
     return (
       <div className="ui container">
@@ -24,10 +60,17 @@ class App extends React.Component {
         <div className="ui container">
           <div className="ui grid">
             <div className="four wide column">
-              <Filters />
+              <Filters
+                onFindPetsClick={this.onFindPetsClick}
+                onChangeType={this.onChangeType}
+                filter={this.state.filters.type}
+              />
             </div>
             <div className="twelve wide column">
-              <PetBrowser />
+              <PetBrowser
+                pets={this.state.pets}
+                onAdoptPet={this.onAdoptPet}
+              />
             </div>
           </div>
         </div>
